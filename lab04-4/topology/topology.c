@@ -35,6 +35,14 @@ int topology_getNodeIDfromip(struct in_addr* addr)
     return answer;
 }
 
+int topology_getNodeIDfromip_val(int ip_val)
+{
+    uint8_t nodeID= (uint8_t)((ip_val >> 24u)  & 0xFFu);
+    int answer=nodeID;
+    return answer;
+}
+
+
 //这个函数返回本机的节点ID
 //如果不能获取本机的节点ID, 返回-1.
 int topology_getMyNodeID()

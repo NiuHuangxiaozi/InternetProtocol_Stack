@@ -102,7 +102,7 @@ void* pkthandler(void* arg)
         printf("Routing: received a packet from neighbor %d\n", pkt.header.src_nodeID);
         //分析进行不同的处理
         //不是自己的报文
-        if(pkt.header.dest_nodeID!=topology_getMyNodeID())
+        if(pkt.header.dest_nodeID != BROADCAST_NODEID && pkt.header.dest_nodeID!=topology_getMyNodeID())
         {
             pthread_mutex_lock(routingtable_mutex);
             int nextID=routingtable_getnextnode(routingtable,pkt.header.dest_nodeID);
@@ -129,19 +129,39 @@ void* pkthandler(void* arg)
         else if(pkt.header.type==ROUTE_UPDATE)//更新路由表
         {
             //更新矢量表和路由表
+            pthread_mutex_lock(dv_mutex);
             update_dv_table(pkt.header.src_nodeID,&pkt);
+            pthread_mutex_unlock(dv_mutex);
+
+            pthread_mutex_lock(routingtable_mutex);
+            routingtable_print(routingtable);
+            pthread_mutex_unlock(routingtable_mutex);
+
+            pthread_mutex_lock(dv_mutex);
+            dvtable_print(dv);
+            pthread_mutex_unlock(dv_mutex);
         }
         else if(pkt.header.type==POINT_KILLED)//有一个邻居去世了
         {
             //将路由表中下目的地为src_node的表象删除
             //将矢量表中mynodeID-src_node设置为正无穷
+            pthread_mutex_lock(routingtable_mutex);
             routingtable_dest_delete(routingtable,pkt.header.src_nodeID);
+            pthread_mutex_unlock(routingtable_mutex);
+
+            pthread_mutex_lock(dv_mutex);
             dvtable_setcost(dv,topology_getMyNodeID(),pkt.header.src_nodeID,INFINITE_COST);
+            pthread_mutex_unlock(dv_mutex);
 
             //同时将相应的矢量表设置为正无穷
+            pthread_mutex_lock(dv_mutex);
             dvtable_delete_point(dv,pkt.header.src_nodeID);
+            pthread_mutex_unlock(dv_mutex);
+
             //最后将矢量表对应的邻居的那一项全部设置为正无穷
+            pthread_mutex_lock(routingtable_mutex);
             dv_routingtable_delete_nextnode(pkt.header.src_nodeID);
+            pthread_mutex_unlock(routingtable_mutex);
         }
         else
             printf("Unknown pkt \n");
@@ -290,7 +310,14 @@ int main(int argc, char *argv[])
 	printf("SIP layer is started...\n");
 	printf("waiting for routes to be established\n");
 	sleep(SIP_WAITTIME);
+
+    pthread_mutex_lock(routingtable_mutex);
 	routingtable_print(routingtable);
+    pthread_mutex_unlock(routingtable_mutex);
+
+    pthread_mutex_lock(dv_mutex);
+    dvtable_print(dv);
+    pthread_mutex_unlock(dv_mutex);
 
 	//等待来自STCP进程的连接
 	printf("waiting for connection from STCP process\n");
@@ -304,7 +331,6 @@ int main(int argc, char *argv[])
 //defined in lab4-4
 void update_dv_table(int src_node,sip_pkt_t * sippkt)
 {
-    pthread_mutex_lock(dv_mutex);
     pkt_routeupdate_t routeupdate_pkt;
     memcpy(&routeupdate_pkt,sippkt->data,sippkt->header.length);
 
@@ -344,8 +370,6 @@ void update_dv_table(int src_node,sip_pkt_t * sippkt)
             update_direct(src_node,dest_node,cost);
         }
     }
-
-    pthread_mutex_unlock(dv_mutex);
 }
 void update_min(int src_node,int dest_node,int cost)
 {
@@ -374,7 +398,10 @@ void update_min(int src_node,int dest_node,int cost)
         {
             if(dv[0].dvEntry[tar_index].cost!=min_dis)
             {
+                //更新路由表
+                pthread_mutex_lock(routingtable_mutex);
                 update_routing_table(dest_node,src_node);
+                pthread_mutex_unlock(routingtable_mutex);
             }
             dv[0].dvEntry[tar_index].cost=min_dis;
             break;
@@ -392,7 +419,10 @@ void update_direct(int src_node,int dest_node,int cost)
     if(dis>=INFINITE_COST)
     {
         dis=INFINITE_COST;
+
+        pthread_mutex_lock(routingtable_mutex);
         routingtable_dest_delete(routingtable,dest_node);
+        pthread_mutex_unlock(routingtable_mutex);
     }
     //保存dis
     for(int tar_index=0;tar_index<all_nums;tar_index++)
@@ -409,8 +439,6 @@ void update_direct(int src_node,int dest_node,int cost)
 }
 void update_routing_table(int target_node,int new_next_node)
 {
-    //更新路由表
-    pthread_mutex_lock(routingtable_mutex);
 
     //hash寻找对应的下标
     int hash_index=target_node%MAX_ROUTINGTABLE_SLOTS;
@@ -446,7 +474,6 @@ void update_routing_table(int target_node,int new_next_node)
             routingtable->hash[hash_index]=routine_entry;
         }
     }
-    pthread_mutex_unlock(routingtable_mutex);
 }
 
 void create_routeupdate_pkt(sip_pkt_t * pkt)
@@ -486,9 +513,41 @@ void dv_routingtable_delete_nextnode(int next_node)
         while(after!=NULL)
         {
             routingtable_entry_t *new_next=after->next;
-            if(after->nextNodeID==next_node)
+            if (after->nextNodeID == next_node && pre == after)
             {
-                dvtable_setcost(dv,topology_getMyNodeID(),after->destNodeID,INFINITE_COST);
+
+                int dir_cost=topology_getCost(topology_getMyNodeID(),after->destNodeID);
+                int new_cost=dir_cost<INFINITE_COST?dir_cost:INFINITE_COST;
+
+                pthread_mutex_lock(routingtable_mutex);
+                if(new_cost!=INFINITE_COST)
+                    update_routing_table(after->destNodeID,after->destNodeID);
+                pthread_mutex_unlock(routingtable_mutex);
+
+                pthread_mutex_lock(dv_mutex);
+                dvtable_setcost(dv,topology_getMyNodeID(), after->destNodeID,new_cost);
+                pthread_mutex_unlock(dv_mutex);
+
+                after = after->next;
+                free(pre);
+                pre = after;
+                routingtable->hash[index] = pre;
+            }
+            else if(after->nextNodeID==next_node)
+            {
+
+                int dir_cost=topology_getCost(topology_getMyNodeID(),after->destNodeID);
+                int new_cost=dir_cost<INFINITE_COST?dir_cost:INFINITE_COST;
+
+                pthread_mutex_lock(routingtable_mutex);
+                if(new_cost!=INFINITE_COST)
+                    update_routing_table(after->destNodeID,after->destNodeID);
+                pthread_mutex_unlock(routingtable_mutex);
+
+                pthread_mutex_lock(dv_mutex);
+                dvtable_setcost(dv,topology_getMyNodeID(),after->destNodeID,new_cost);
+                pthread_mutex_unlock(dv_mutex);
+
                 free(after);
                 pre->next=new_next;
                 after=new_next;

@@ -44,7 +44,7 @@ dv_t* dvtable_create()
     for(int index=0;index<table_num;index++)
     {
         //获得对应的id
-        int temp_node_id=all_list[index];
+        int temp_node_id=topology_getNodeIDfromip_val(all_list[index]);
         //获得对方的cost
         int cost= topology_getCost(temp_node_id,topology_getMyNodeID());
 
@@ -59,7 +59,7 @@ dv_t* dvtable_create()
     for(int nbr_index=0;nbr_index<nbr_num;nbr_index++)
     {
         //获得对应的邻居的nodeID
-        int nbr_node=nbr_list[nbr_index];
+        int nbr_node=topology_getNodeIDfromip_val(nbr_list[nbr_index]);
 
         //填充dv_t[nbr_index+1].nodeID，+1是因为0代表mynodeid.
         assert(nbr_index+1<nbr_num+1);
@@ -71,7 +71,7 @@ dv_t* dvtable_create()
         for(int index=0;index<table_num;index++)
         {
             //获得对应的nodeid
-            vector_table[nbr_index+1].dvEntry[index].nodeID=all_list[index];
+            vector_table[nbr_index+1].dvEntry[index].nodeID=topology_getNodeIDfromip_val(all_list[index]);
             vector_table[nbr_index+1].dvEntry[index].cost=INFINITE_COST;
         }
     }
@@ -130,23 +130,25 @@ typedef struct distancevector {
 } dv_t;
  */
 //这个函数打印距离矢量表的内容.
-void dvtable_print(dv_t* dvtable)
+void dvtable_print(dv_t *dvtable)
 {
-    int nbr_num=topology_getNbrNum();
-    int node_num=topology_getNodeNum();
-    printf("====The %d 's distance vector table====\n",topology_getMyNodeID());
-    for(int nbr_index=0;nbr_index<nbr_num+1;nbr_index++)
+  int nbr_num = topology_getNbrNum();
+  int node_num = topology_getNodeNum();
+  printf("====The %d 's distance vector table====\n", topology_getMyNodeID());
+  for (int nbr_index = 0; nbr_index < nbr_num + 1; nbr_index++)
+  {
+    printf("The Node head %d | dvEntry begin :  ", dvtable[nbr_index].nodeID);
+    for (int node_index = 0; node_index < node_num; node_index++)
     {
-        printf("The Node head %d | dvEntry begin :",dvtable->nodeID);
-        for(int node_index=0;node_index<node_num;node_index++)
-        {
-            printf("|Node %d Target Node %d Cost %d|",
-                   node_index,dvtable->dvEntry[node_index].nodeID,
-                   dvtable->dvEntry[node_index].cost);
-        }
-        printf("dvEntry end \n");
+      printf("|Node %d Target Node %d Cost %d|",
+
+             node_index, dvtable[nbr_index].dvEntry[node_index].nodeID,
+
+             dvtable[nbr_index].dvEntry[node_index].cost);
     }
-    printf("=======================================\n");
+    printf("   dvEntry end \n");
+  }
+  printf("=======================================\n");
 }
 
 void dvtable_delete_point(dv_t * dvtable,int nodeID)

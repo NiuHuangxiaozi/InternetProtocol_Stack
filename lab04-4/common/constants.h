@@ -72,14 +72,14 @@
 #define BROADCAST_NODEID 9999
 
 //路由更新广播间隔, 以秒为单位
-#define ROUTEUPDATE_INTERVAL 5
+#define ROUTEUPDATE_INTERVAL 15
 
 
 
 
 //defined in lab4-3
 #define LOCAL_IP "127.0.0.1"
-#define L_IP "192.168.3.90"
+#define L_IP "192.168.56.90"
 //defined in lab4-3 end
 
 //defined in lab4-4

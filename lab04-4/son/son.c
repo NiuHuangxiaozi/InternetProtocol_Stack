@@ -78,7 +78,6 @@ void *waitNbrs(void *arg) {
     {
         if (nt[nbr_index].nodeID > myID)
         {
-
             fd_set fdset;                   // define fd set
             while(1)
             {
@@ -235,6 +234,7 @@ void waitSIP() {
     while(1)
     {
         int sip2son_flag=getpktToSend(&sip2son_pkt,&nextNode,sip_conn);
+        if(sip2son_flag!=1)break;
         assert(sip2son_flag==1);
 
         //发送报文

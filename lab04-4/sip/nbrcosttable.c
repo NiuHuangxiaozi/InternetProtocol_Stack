@@ -29,10 +29,11 @@ nbr_cost_entry_t* nbrcosttable_create() {
   //遍历这个vector添加nodeID和cost
   for (int nbr_index = 0; nbr_index < nbr_num; nbr_index++)
   {
-    int cost = topology_getCost(myNodeID,nbr_nodeIDs[nbr_index]);
+    int nbr_nodeID=topology_getNodeIDfromip_val(nbr_nodeIDs[nbr_index]);
+    int cost = topology_getCost(myNodeID,nbr_nodeID);
 
     //初始化邻居代价表
-    nbr_array[nbr_index].nodeID=nbr_nodeIDs[nbr_index];
+    nbr_array[nbr_index].nodeID=nbr_nodeID;
     nbr_array[nbr_index].cost=cost;
   }
 

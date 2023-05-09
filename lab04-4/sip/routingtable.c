@@ -45,12 +45,12 @@ routingtable_t* routingtable_create()
   {
     routingtable_entry_t * routine_entry=(routingtable_entry_t *)
             malloc(sizeof(routingtable_entry_t));
-    routine_entry->destNodeID=nbr_list[nbr_index];
-    routine_entry->nextNodeID=nbr_list[nbr_index];
+    routine_entry->destNodeID=topology_getNodeIDfromip_val(nbr_list[nbr_index]);
+    routine_entry->nextNodeID=topology_getNodeIDfromip_val(nbr_list[nbr_index]);
     routine_entry->next=NULL;
 
     //HASH PROCESS
-    int hash_index=nbr_list[nbr_index]%MAX_ROUTINGTABLE_SLOTS;
+    int hash_index=topology_getNodeIDfromip_val(nbr_list[nbr_index])%MAX_ROUTINGTABLE_SLOTS;
     //get according POINT
 
     //头部插入
@@ -132,9 +132,10 @@ void routingtable_print(routingtable_t* routingtable)
             routingtable_entry_t * head=routingtable->hash[index];
             while(head!=NULL)
             {
-                printf("| destNodeID %d , nextNodeID %d | ",head->destNodeID,head->destNodeID);
+                printf("| destNodeID %d , nextNodeID %d | ",head->destNodeID,head->nextNodeID);
                 head=head->next;
             }
+            printf("\n");
         }
     }
     printf("==============================\n");
@@ -149,7 +150,8 @@ void routingtable_dest_delete(routingtable_t* routingtable,int dest_node)
     assert(hash_index>=0);
 
     routingtable_entry_t * head=routingtable->hash[hash_index];
-
+    if (head == NULL)
+        return;
     if(head!=NULL&&head->destNodeID==dest_node)
     {
         routingtable_entry_t * new_head=head->next;
@@ -157,6 +159,7 @@ void routingtable_dest_delete(routingtable_t* routingtable,int dest_node)
         routingtable->hash[hash_index]=new_head;
         return;
     }
+    assert(head!=NULL);
     while(head->next!=NULL)
     {
         if (head->next->destNodeID == dest_node)
