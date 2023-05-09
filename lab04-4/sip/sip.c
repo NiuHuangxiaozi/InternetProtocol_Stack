@@ -519,10 +519,8 @@ void dv_routingtable_delete_nextnode(int next_node)
                 int dir_cost=topology_getCost(topology_getMyNodeID(),after->destNodeID);
                 int new_cost=dir_cost<INFINITE_COST?dir_cost:INFINITE_COST;
 
-                pthread_mutex_lock(routingtable_mutex);
                 if(new_cost!=INFINITE_COST)
                     update_routing_table(after->destNodeID,after->destNodeID);
-                pthread_mutex_unlock(routingtable_mutex);
 
                 pthread_mutex_lock(dv_mutex);
                 dvtable_setcost(dv,topology_getMyNodeID(), after->destNodeID,new_cost);
@@ -539,10 +537,8 @@ void dv_routingtable_delete_nextnode(int next_node)
                 int dir_cost=topology_getCost(topology_getMyNodeID(),after->destNodeID);
                 int new_cost=dir_cost<INFINITE_COST?dir_cost:INFINITE_COST;
 
-                pthread_mutex_lock(routingtable_mutex);
                 if(new_cost!=INFINITE_COST)
                     update_routing_table(after->destNodeID,after->destNodeID);
-                pthread_mutex_unlock(routingtable_mutex);
 
                 pthread_mutex_lock(dv_mutex);
                 dvtable_setcost(dv,topology_getMyNodeID(),after->destNodeID,new_cost);
