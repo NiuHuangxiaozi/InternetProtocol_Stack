@@ -457,6 +457,7 @@ void update_routing_table(int target_node,int new_next_node)
 
     if(head==NULL)//说明没有找到这样的条目
     {
+
         routingtable_entry_t * routine_entry=(routingtable_entry_t *)
                 malloc(sizeof(routingtable_entry_t));
         routine_entry->destNodeID=target_node;
@@ -512,41 +513,51 @@ void dv_routingtable_delete_nextnode(int next_node)
 
         while(after!=NULL)
         {
-            routingtable_entry_t *new_next=after->next;
             if (after->nextNodeID == next_node && pre == after)
             {
 
                 int dir_cost=topology_getCost(topology_getMyNodeID(),after->destNodeID);
                 int new_cost=dir_cost<INFINITE_COST?dir_cost:INFINITE_COST;
 
-                if(new_cost!=INFINITE_COST)
-                    update_routing_table(after->destNodeID,after->destNodeID);
-
                 pthread_mutex_lock(dv_mutex);
                 dvtable_setcost(dv,topology_getMyNodeID(), after->destNodeID,new_cost);
                 pthread_mutex_unlock(dv_mutex);
 
-                after = after->next;
-                free(pre);
-                pre = after;
-                routingtable->hash[index] = pre;
+                if(new_cost!=INFINITE_COST)
+                {
+                    after->nextNodeID=after->destNodeID;
+                    after=after->next;
+                }
+                else
+                {
+                    after = after->next;
+                    free(pre);
+                    pre = after;
+                    routingtable->hash[index] = pre;
+                }
             }
             else if(after->nextNodeID==next_node)
             {
 
                 int dir_cost=topology_getCost(topology_getMyNodeID(),after->destNodeID);
                 int new_cost=dir_cost<INFINITE_COST?dir_cost:INFINITE_COST;
-
-                if(new_cost!=INFINITE_COST)
-                    update_routing_table(after->destNodeID,after->destNodeID);
-
                 pthread_mutex_lock(dv_mutex);
                 dvtable_setcost(dv,topology_getMyNodeID(),after->destNodeID,new_cost);
                 pthread_mutex_unlock(dv_mutex);
 
-                free(after);
-                pre->next=new_next;
-                after=new_next;
+                if(new_cost!=INFINITE_COST)
+                {
+                    after->nextNodeID=after->destNodeID;
+                    after=after->next;
+                    pre=pre->next;
+                }
+                else
+                {
+                    routingtable_entry_t * new_next=after->next;
+                    free(after);
+                    pre->next=new_next;
+                    after=new_next;
+                }
             }
             else
             {
