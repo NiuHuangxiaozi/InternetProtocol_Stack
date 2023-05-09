@@ -63,7 +63,7 @@
 #define MAX_ROUTINGTABLE_SLOTS 10
 
 //无穷大的链路代价值, 如果两个节点断开连接了, 它们之间的链路代价值就是INFINITE_COST
-#define INFINITE_COST 999
+#define INFINITE_COST 60
 
 //SIP进程打开这个端口并等待来自STCP进程的连接
 #define SIP_PORT 4022
