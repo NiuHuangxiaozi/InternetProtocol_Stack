@@ -229,7 +229,7 @@ int forwardsegToSTCP(int stcp_conn, int src_nodeID, seg_t* segPtr)
     //三个send
     char start_symbol[2]={'!','&'};
     ssize_t begin_err = send(stcp_conn,start_symbol, sizeof(start_symbol), 0);
-    assert(begin_err > 0);
+    //assert(begin_err > 0);
     if(begin_err<=0)return -1;
 
 
@@ -241,12 +241,12 @@ int forwardsegToSTCP(int stcp_conn, int src_nodeID, seg_t* segPtr)
     memcpy(&(stcp2sip.seg),segPtr,sizeof(*(segPtr)));
 
     ssize_t seg_err =send(stcp_conn,&stcp2sip, sizeof(stcp2sip), 0);
-    assert(seg_err > 0);
+    //assert(seg_err > 0);
     if(seg_err<=0)return -1;
 
     char end_symbol[2]={'!','#'};
     ssize_t end_err = send(stcp_conn,end_symbol, sizeof(end_symbol), 0);
-    assert(end_err > 0);
+    //assert(end_err > 0);
     if(end_err<=0)return -1;
     return 1;
 }

@@ -27,39 +27,24 @@
 #define CLIENTPORT2 89
 #define SERVERPORT2 90
 //在接收到字符串后, 等待15秒, 然后关闭连接.
-#define WAITTIME 15
+#define WAITTIME 30
 
 //这个函数连接到本地SIP进程的端口SIP_PORT. 如果TCP连接失败, 返回-1. 连接成功, 返回TCP套接字描述符, STCP将使用该描述符发送段.
 int connectToSIP()
 {
-    //创建sockfd
-    int server_sockfd= socket(PF_INET,SOCK_STREAM,0);
-    assert(server_sockfd>=0);
-    if(server_sockfd==-1)return -1;
+    int son_start_code= socket(AF_INET, SOCK_STREAM, 0);
+    if(son_start_code<0)return -1;
+    //建立连接
+    struct sockaddr_in servaddr;
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr(LOCAL_IP);
+    servaddr.sin_port = htons(SIP_PORT);
 
-    //BIND到指定的端口
-    struct sockaddr_in addr;
-    addr.sin_family=AF_INET;
-    addr.sin_addr.s_addr=htonl(INADDR_ANY);
-    addr.sin_port=htons(SIP_PORT);
+    int connect_state = connect(son_start_code,(void *)&servaddr, sizeof(servaddr));
+    assert(connect_state>=0);
+    if(connect_state<0)return -1;
 
-    int ser_bind_val=bind(server_sockfd,(const struct sockaddr *)(&addr),sizeof(addr));
-    assert(ser_bind_val>=0);
-    if(ser_bind_val<0)return -1;
-
-    //对端口进行监听
-    int ser_liston_val=listen(server_sockfd,10);
-    assert(ser_liston_val>=0);
-    if(ser_liston_val<0)return -1;
-
-    //接受客户端套接字
-    int addr_length = 0;
-    int new_socket = accept(server_sockfd,(struct sockaddr *)&addr, (socklen_t *)&addr_length);
-    assert(new_socket>=0);
-    if(new_socket<0)return -1;
-
-    return new_socket;
-    //你需要编写这里的代码.
+    return son_start_code;
 }
 
 //这个函数断开到本地SIP进程的TCP连接. 
