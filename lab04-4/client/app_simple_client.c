@@ -34,18 +34,38 @@
 //在发送字符串后, 等待5秒, 然后关闭连接.
 #define WAITTIME 5
 
-//这个函数连接到本地SIP进程的端口SIP_PORT. 如果TCP连接失败, 返回-1. 连接成功, 返回TCP套接字描述符, STCP将使用该描述符发送段.
-int connectToSIP() {
+// Defined by Niu in lab4-1
+#include <unistd.h>
+#include <fcntl.h>
+// Defined by Niu in lab4-1 end
 
+
+//这个函数连接到本地SIP进程的端口SIP_PORT. 如果TCP连接失败, 返回-1. 连接成功, 返回TCP套接字描述符, STCP将使用该描述符发送段.
+int connectToSIP()
+{
+    //你需要编写这里的代码.
+    //创建sockfd
+    int son_start_code= socket(AF_INET, SOCK_STREAM, 0);
+    if(son_start_code<0)return -1;
+    //建立连接
+    struct sockaddr_in servaddr;
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr(LOCAL_IP);
+    servaddr.sin_port = htons(SIP_PORT);
+
+    int connect_state = connect(son_start_code,(void *)&servaddr, sizeof(servaddr));
+    assert(connect_state>=0);
+    if(connect_state<0)return -1;
+
+    return son_start_code;
 	//你需要编写这里的代码.
-	
 }
 
 //这个函数断开到本地SIP进程的TCP连接. 
-void disconnectToSIP(int sip_conn) {
-
-	//你需要编写这里的代码.
-	
+void disconnectToSIP(int sip_conn)
+{
+    //你需要编写这里的代码.
+    close(sip_conn);
 }
 
 int main() {
@@ -64,7 +84,7 @@ int main() {
 	sleep(STARTDELAY);
 
 	char hostname[50];
-	printf("Enter server name to connect:");
+	printf("Enter server ip to connect:");
 	scanf("%s",hostname);
 	int server_nodeID = topology_getNodeIDfromname(hostname);
 	if(server_nodeID == -1) {

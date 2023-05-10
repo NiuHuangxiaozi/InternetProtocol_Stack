@@ -124,4 +124,39 @@ void* sendBuf_timer(void* clienttcb);
 // 当超时事件发生时, 重新发送所有已发送但未被确认段. 当发送缓冲区为空时, 这个线程将终止.
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
+
+//funcs Defined by niu in lab 4-1
+
+//这个函数是为了初始化stcp的控制报文，第一个参数是控制类型，第二个指针是要初始化的段
+void Initial_stcp_control_seg(client_tcb_t * tcb,int Signal,seg_t  *syn);
+
+//这个函数是在客户端接受到包之后采取的相应的措施
+void action(int src_nodeID,seg_t  *segBuf);
+
+//这个函数是为了在tcbs里面找一个空闲的tcb，找到返回相应tcb的下标，如果没有找到或者已经存在返回-1
+int tcbtable_newtcb(unsigned int port);
+
+
+//这个函数是为了在tcbs里面找一个空闲的tcb，找到返回相应tcb的下标，如果没有找到或者已经存在返回-1
+client_tcb_t* tcbtable_gettcb(int sockfd);
+
+//从端口号获得tcb的指针
+client_tcb_t* tcbtable_gettcbFromPort(unsigned int clientPort);
+
+//funcs Defined by niu in lab 4-1 end
+
+//funcs Defined by niu in lab 4-2
+void sendBuf_addSeg(client_tcb_t* clienttcb, segBuf_t* newSegBuf);
+
+void sendBuf_send(client_tcb_t* clienttcb);
+
+void sendBuf_clear(client_tcb_t* clienttcb);
+
+void sendBuf_recvAck(client_tcb_t* clienttcb, unsigned int ack_seqnum);
+
+void sendBuf_timeout(client_tcb_t* clienttcb);
+//funcs Defined by niu in lab 4-2 end
+
+
 #endif
