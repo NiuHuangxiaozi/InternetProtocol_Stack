@@ -19,7 +19,7 @@ int son_sendpkt(int nextNodeID, sip_pkt_t* pkt, int son_conn)
     //准备报文
     sendpkt_arg_t sip2son;
     sip2son.nextNodeID=nextNodeID;
-    sip2son.pkt=*pkt;
+    memcpy((&sip2son.pkt), pkt, sizeof((*pkt)));
     //发送报文
     //三个send
     char start_symbol[2]={'!','&'};

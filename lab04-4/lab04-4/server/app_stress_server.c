@@ -27,20 +27,32 @@
 #define CLIENTPORT1 87
 #define SERVERPORT1 88
 //在接收的文件数据被保存后, 服务器等待15秒, 然后关闭连接.
-#define WAITTIME 15
+#define WAITTIME 65
 
 //这个函数连接到本地SIP进程的端口SIP_PORT. 如果TCP连接失败, 返回-1. 连接成功, 返回TCP套接字描述符, STCP将使用该描述符发送段.
 int connectToSIP() {
 
-	//你需要编写这里的代码.
+    int son_start_code= socket(AF_INET, SOCK_STREAM, 0);
+    if(son_start_code<0)return -1;
+    //建立连接
+    struct sockaddr_in servaddr;
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr(LOCAL_IP);
+    servaddr.sin_port = htons(SIP_PORT);
+
+    int connect_state = connect(son_start_code,(void *)&servaddr, sizeof(servaddr));
+    assert(connect_state>=0);
+    if(connect_state<0)return -1;
+
+    return son_start_code;
 	
 }
 
 //这个函数断开到本地SIP进程的TCP连接. 
-void disconnectToSIP(int sip_conn) {
-
-	//你需要编写这里的代码.
-	
+void disconnectToSIP(int sip_conn)
+{
+    close(sip_conn);
+    //你需要编写这里的代码.
 }
 
 int main() {
