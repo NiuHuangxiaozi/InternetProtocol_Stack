@@ -67,6 +67,8 @@ int son_recvpkt(sip_pkt_t* pkt, int son_conn)
         ssize_t recv_flag=recv(son_conn,&symbol,sizeof(symbol),0);
         //ÖØµþÍøÂç²ã¶Ï¿ªÁË
         if(recv_flag==0)return -1;
+        if (temp_buf_loc >= 1500)
+            break;
         switch (cur_state)
         {
             case SEGSTART1:
@@ -76,6 +78,8 @@ int son_recvpkt(sip_pkt_t* pkt, int son_conn)
             case SEGSTART2:
                 if (symbol == '&')
                     cur_state = SEGRECV;
+                else if(symbol=='!')
+                    break;
                 else
                     cur_state = SEGSTART1;
                 break;
@@ -92,6 +96,12 @@ int son_recvpkt(sip_pkt_t* pkt, int son_conn)
                 if (symbol == '#')
                 {
                     is_received=1;
+                }
+                else if(symbol == '!')
+                {
+                    char pre_sym='!';
+                    memcpy((char *) (temp_buf + temp_buf_loc), &pre_sym, 1);
+                    temp_buf_loc++;
                 }
                 else
                 {
@@ -154,6 +164,8 @@ int getpktToSend(sip_pkt_t* pkt, int* nextNode,int sip_conn)
             case SEGSTART2:
                 if (symbol == '&')
                     cur_state = SEGRECV;
+                else if(symbol=='!')
+                    break;
                 else
                     cur_state = SEGSTART1;
                 break;
@@ -170,6 +182,12 @@ int getpktToSend(sip_pkt_t* pkt, int* nextNode,int sip_conn)
                 if (symbol == '#')
                 {
                     is_received=1;
+                }
+                else if(symbol == '!')
+                {
+                    char pre_sym='!';
+                    memcpy((char *) (temp_buf + temp_buf_loc), &pre_sym, 1);
+                    temp_buf_loc++;
                 }
                 else
                 {
@@ -283,6 +301,8 @@ int recvpkt(sip_pkt_t* pkt, int conn)
             case SEGSTART2:
                 if (symbol == '&')
                     cur_state = SEGRECV;
+                else if(symbol=='!')
+                    break;
                 else
                     cur_state = SEGSTART1;
                 break;
@@ -299,6 +319,12 @@ int recvpkt(sip_pkt_t* pkt, int conn)
                 if (symbol == '#')
                 {
                     is_received=1;
+                }
+                else if(symbol == '!')
+                {
+                    char pre_sym='!';
+                    memcpy((char *) (temp_buf + temp_buf_loc), &pre_sym, 1);
+                    temp_buf_loc++;
                 }
                 else
                 {

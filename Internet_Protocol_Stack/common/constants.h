@@ -79,7 +79,7 @@
 
 //defined in lab4-3
 #define LOCAL_IP "127.0.0.1"
-#define L_IP "192.168.56.90"
+#define L_IP "192.168.43.90"
 //defined in lab4-3 end
 
 //defined in lab4-4

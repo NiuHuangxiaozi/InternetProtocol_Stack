@@ -30,7 +30,7 @@
 //在连接到SIP进程后, 等待1秒, 让服务器启动.
 #define STARTDELAY 1
 //在发送文件后, 等待5秒, 然后关闭连接.
-#define WAITTIME 55
+#define WAITTIME 65
 
 //这个函数连接到本地SIP进程的端口SIP_PORT. 如果TCP连接失败, 返回-1. 连接成功, 返回TCP套接字描述符, STCP将使用该描述符发送段.
 int connectToSIP()
