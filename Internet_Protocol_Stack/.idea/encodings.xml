@@ -2,8 +2,12 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/client/stcp_client.c" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/client/stcp_client.h" charset="GBK" />
     <file url="file://$PROJECT_DIR$/common/pkt.c" charset="GBK" />
     <file url="file://$PROJECT_DIR$/common/pkt.h" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/server/app_simple_server.c" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/server/app_stress_server.c" charset="GBK" />
     <file url="file://$PROJECT_DIR$/server/stcp_server.c" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/server/stcp_server.h" charset="GBK" />
   </component>
 </project>

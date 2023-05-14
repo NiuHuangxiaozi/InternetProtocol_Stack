@@ -114,6 +114,7 @@ void* pkthandler(void* arg)
             }
             else
             {
+                printf("transfer pkt %d \n",pkt.header.dest_nodeID);
                 son_sendpkt(nextID,&pkt,son_conn);
             }
         }
@@ -124,7 +125,9 @@ void* pkthandler(void* arg)
 
             //todo
             int flag=forwardsegToSTCP(stcp_conn,pkt.header.src_nodeID,&pkt2Sip);
-            assert(flag==1);
+            if(flag==-1)
+                printf("sip can't send to stcp \n");
+            //assert(flag==1);
         }
         else if(pkt.header.type==ROUTE_UPDATE)//更新路由表
         {
@@ -234,13 +237,14 @@ void waitSTCP()
                 stcp_conn=new_socket;
                 //上层传来的stcp报文的缓存
                 seg_t segPtr;
-                int next_node=0;
+                int dest_node=0;
                 while (1)
                 {
-                    int flag = getsegToSend(stcp_conn,&next_node,&segPtr);
+                    int flag = getsegToSend(stcp_conn,&dest_node,&segPtr);
                     if (flag == -1)
                     {
                         printf("sip:stcp is disconnected!\n");
+                        close(stcp_conn);
                         break;
                     }
                     else if (flag == 1)
@@ -248,8 +252,18 @@ void waitSTCP()
                         printf("sip receive pkt from stcp \n");
                         //从数据中拷贝sip报文
                         sip_pkt_t sip2son;
-                        memcpy(&sip2son,segPtr.data,segPtr.header.length);
+                        memcpy(sip2son.data,&segPtr,sizeof(segPtr));
 
+                        sip2son.header.length=sizeof(segPtr);
+                        sip2son.header.type=SIP;
+                        sip2son.header.dest_nodeID=dest_node;
+                        sip2son.header.src_nodeID=topology_getMyNodeID();
+
+                        pthread_mutex_lock(routingtable_mutex);
+                        int next_node= routingtable_getnextnode(routingtable,dest_node);
+                        pthread_mutex_unlock(routingtable_mutex);
+
+                        assert(next_node!=-1);
                         int son2sip_flag = son_sendpkt(next_node,&sip2son,son_conn);
                         assert(son2sip_flag == 1);
                     }

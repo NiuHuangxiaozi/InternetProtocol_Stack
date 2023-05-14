@@ -64,7 +64,47 @@ int getsegToSend(int stcp_conn, int* dest_nodeID, seg_t* segPtr);
 //SIP进程使用这个函数发送包含段及其源节点ID的sendseg_arg_t结构给STCP进程.
 //参数stcp_conn是STCP进程和SIP进程之间连接的TCP描述符.
 //如果sendseg_arg_t被成功发送就返回1, 否则返回-1.
-int forwardsegToSTCP(int stcp_conn, int src_nodeID, seg_t* segPtr); 
+int forwardsegToSTCP(int stcp_conn, int src_nodeID, seg_t* segPtr);
+
+
+
+
+
+
+
+//Defined by Niu in lab4-1
+#define SEGSTART1  0
+#define SEGSTART2  1
+#define SEGRECV    2
+#define SEGSTOP1   3
+
+void print_seg(seg_t *seg); //打印每一个数据段的信息
+
+void increase_print_index(); //行号的增加函数
+//Defined by Niu in lab4-1  end
+
+//Defined by Niu in lab4-2
+unsigned short csum (unsigned short *packet, int packlen);
+
+unsigned short ccsum (unsigned short *packet, int packlen);
+//Defined by Niu in lab4-2 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // 一个段有PKT_LOST_RATE/2的可能性丢失, 或PKT_LOST_RATE/2的可能性有着错误的校验和.
 // 如果数据包丢失了, 就返回1, 否则返回0. 

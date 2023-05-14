@@ -95,4 +95,37 @@ void* seghandler(void* arg);
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //
 
+
+
+//Defined by Niu in lab4-1
+//这个函数定义了在服务器受到相应的报文后应该进行的动作，由seghandler函数进行调用。
+void action(int src_node,seg_t  *seg);
+
+
+//这个函数构造server可能发的包.
+void Initial_stcp_control_seg(server_tcb_t * tcb,int Signal,seg_t  *syn);
+
+
+//这个函数由action函数里面创建的线程，专门等待waitloss时间，然后服务器进入closed的状态。
+void *close_wait_handler(void* arg);
+
+//创建新的tcb，初始化服务器的port
+int tcbtable_newtcb(unsigned int port);
+
+//获得服务器tcb的指针
+server_tcb_t * tcbtable_gettcb(int sockfd);
+
+server_tcb_t  *tcbtable_recv_gettcb(seg_t * seg);
+//Defined by Niu in lab4-1 end
+
+
+//Defined by Niu in lab4-2
+//将发送来的数据拷贝到相应tcb的recvbuf里面
+void recvBuf_recv(server_tcb_t * tcb,seg_t *seg);
+
+
+//这个函数的主要功能是将已经装满内容的tcb buf里面的内容拷贝给用户
+void recvBuf_copyToClient(server_tcb_t  * tcb,void * buf,unsigned  int length);
+//Defined by Niu in lab4-2 End
+
 #endif

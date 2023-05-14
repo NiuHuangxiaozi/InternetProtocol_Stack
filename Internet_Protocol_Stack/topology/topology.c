@@ -68,7 +68,6 @@ int topology_getNbrNum()
             fscanf(fp, "%s",ip1);
             fscanf(fp, "%s",ip2);
             fscanf(fp, "%s",cost);
-            printf("%s\n",ip1);
             if(strcmp(ip1,L_IP)==0)
                 answer++;
             else if(strcmp(ip2,L_IP)==0)
