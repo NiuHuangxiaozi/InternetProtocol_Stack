@@ -1,2 +1,2 @@
-# Internet-protocol-lab4-4-Protocol
-The total protocol stack composed of stcp , sip and son
+# Internet-protocol-lab4-2-Protocol-
+Task: GBN protocol, and checksum. 
